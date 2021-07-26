@@ -27,7 +27,7 @@ class Torrent {
   /// Amount of transfer data completed in bytes
   int completed;
   /// Unix Epoch timestamp of when the torrent was completed
-  int completedOn;
+  int completionOn;
   /// The absolute path of the torrent contents
   final String contentPath;
   /// The download speed limit on the torrent
@@ -49,6 +49,30 @@ class Torrent {
   double maxRatio;
   int maxSeedingTime;
   final String name;
+  int numComplete;
+  int numIncomplete;
+  int numLeechs;
+  int numSeeds;
+  int priority;
+  double progress;
+  double ratio;
+  double ratioLimit;
+  String savePath;
+  int seedingTime;
+  int seedingTimeLimit;
+  int seenComplete;
+  bool seqDl;
+  int size;
+  String state;
+  bool superSeeding;
+  String tags;
+  int timeActive;
+  int totalSize;
+  String tracker;
+  int upLimit;
+  int uploaded;
+  int uploadedSession;
+  int upspeed;
 
   Torrent(
     this.addedOn,
@@ -57,7 +81,7 @@ class Torrent {
     this.availability,
     this.category,
     this.completed,
-    this.completedOn,
+    this.completionOn,
     this.contentPath,
     this.dlLimit,
     this.dlspeed,
@@ -72,16 +96,40 @@ class Torrent {
     this.maxRatio,
     this.maxSeedingTime,
     this.name,
+    this.numComplete,
+    this.numIncomplete,
+    this.numLeechs,
+    this.numSeeds,
+    this.priority,
+    this.progress,
+    this.ratio,
+    this.ratioLimit,
+    this.savePath,
+    this.seedingTime,
+    this.seedingTimeLimit,
+    this.seenComplete,
+    this.seqDl,
+    this.size,
+    this.state,
+    this.superSeeding,
+    this.tags,
+    this.timeActive,
+    this.totalSize,
+    this.tracker,
+    this.upLimit,
+    this.uploaded,
+    this.uploadedSession,
+    this.upspeed,
   );
  
-  Torrent.fromJson(Map<String, dynamic> json):
+  Torrent.fromJson(dynamic json):
     this.addedOn = json['added_on'],
     this.amountLeft = json['amount_left'],
     this.autoTmm = json['auto_tmm'],
-    this.availability = json['availability'],
+    this.availability = json['availability'] + 0.0,
     this.category = json['category'],
     this.completed = json['completed'],
-    this.completedOn = json['completed_on'],
+    this.completionOn = json['completion_on'],
     this.contentPath = json['content_path'],
     this.dlLimit = json['dl_limit'],
     this.dlspeed = json['dlspeed'],
@@ -93,9 +141,33 @@ class Torrent {
     this.hash = json['hash'],
     this.lastActivity = json['last_activity'],
     this.magnetURI = json['magnet_uri'],
-    this.maxRatio = json['max_ratio'],
+    this.maxRatio = json['max_ratio'] + 0.0,
     this.maxSeedingTime = json['max_seeding_time'],
-    this.name = json['name'];
+    this.name = json['name'],
+    this.numComplete = json['num_complete'],
+    this.numIncomplete = json['num_incomplete'],
+    this.numLeechs = json['num_leechs'],
+    this.numSeeds = json['num_seeds'],
+    this.priority = json['priority'],
+    this.progress = json['progress'] + 0.0,
+    this.ratio = json['ratio'] + 0.0,
+    this.ratioLimit = json['ratio_limit'] + 0.0,
+    this.savePath = json['save_path'],
+    this.seedingTime = json['seeding_time'],
+    this.seedingTimeLimit = json['seeding_time_limit'],
+    this.seenComplete = json['seen_complete'],
+    this.seqDl = json['seq_dl'],
+    this.size = json['size'],
+    this.state = json['state'],
+    this.superSeeding = json['super_seeding'],
+    this.tags = json['tags'],
+    this.timeActive = json['time_active'],
+    this.totalSize = json['total_size'],
+    this.tracker = json['tracker'],
+    this.upLimit = json['up_limit'],
+    this.uploaded = json['uploaded'],
+    this.uploadedSession = json['uploaded_session'],
+    this.upspeed = json['upspeed'];
  
   Map<String, dynamic> toJson() => {
     'added_on': this.addedOn,
@@ -104,7 +176,7 @@ class Torrent {
     'availability': this.availability,
     'category': this.category,
     'completed': this.completed,
-    'completed_on': this.completedOn,
+    'completion_on': this.completionOn,
     'content_path': this.contentPath,
     'dl_limit': this.dlLimit,
     'dlspeed': this.dlspeed,
@@ -119,5 +191,29 @@ class Torrent {
     'max_ratio': this.maxRatio,
     'max_seeding_time': this.maxSeedingTime,
     'name': this.name,
+    'num_complete': this.numComplete,
+    'num_incomplete': this.numIncomplete,
+    'num_leechs': this.numLeechs,
+    'num_seeds': this.numSeeds,
+    'priority': this.priority,
+    'progress': this.progress,
+    'ratio': this.ratio,
+    'ratio_limit': this.ratioLimit,
+    'save_path': this.savePath,
+    'seeding_time': this.seedingTime,
+    'seeding_time_limit': this.seedingTimeLimit,
+    'seen_complete': this.seenComplete,
+    'seq_dl': this.seqDl,
+    'size': this.size,
+    'state': this.state,
+    'super_seeding': this.superSeeding,
+    'tags': this.tags,
+    'time_active': this.timeActive,
+    'total_size': this.totalSize,
+    'tracker': this.tracker,
+    'up_limit': this.upLimit,
+    'uploaded': this.uploaded,
+    'uploaded_session': this.uploadedSession,
+    'upspeed': this.upspeed,
   };
 }

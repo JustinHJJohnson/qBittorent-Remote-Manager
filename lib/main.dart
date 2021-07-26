@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'login.dart';
+import 'server.dart';
 import 'torrent.dart';
 import 'utility_functions.dart';
 import 'torrent_functions.dart';
@@ -34,7 +35,17 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   String _title = "qBittorrent Remote Manager";
   String _cookie = "";
-  List<Map<String, dynamic>> _torrents = [];
+  List<Torrent> _torrents = [];
+  Server _server = Server.failedConnection();
+
+  void _logout(Server server) async {
+    await server.logout();
+    setState(() {
+      _torrents.removeRange(0, _torrents.length);
+      _title = "qBittorrent Remote Manager";
+      _cookie = "";
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -55,22 +66,19 @@ class _MyHomePageState extends State<MyHomePage> {
               onTap: () async {
                 Navigator.pop(context);
 
-                final Map<String, String> info = await Navigator.push(
+                final Server server = await Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => LoginScreen()),
-                ) ?? {};
+                ) ?? Server.failedConnection();
 
-
-                if (info.isNotEmpty) {
-                  List<Map<String, dynamic>> torrents = await getTorrents(
-                    info['baseURL']!,
-                    info['cookie']!
-                  );
+                if (server.connected) {
+                  List<Torrent> torrents = await getTorrents(server);
 
                   setState(() {
+                    _server = server;
                     _torrents = torrents;
-                    _title = info['name']!;
-                    _cookie = info['cookie']!;
+                    _title = server.name!;
+                    _cookie = server.cookie!;
                   });
                 }
               },
@@ -100,11 +108,19 @@ class _MyHomePageState extends State<MyHomePage> {
                   itemCount: _torrents.length,
                   itemBuilder: (BuildContext context, int index) {
                     return ListTile(
-                      title: Text(_torrents[index]['name']),
+                      title: Text(_torrents[index].name),
                     );
                   }
                 ),
               ),
+              Padding(
+                padding: const EdgeInsets.all(2.0),
+                child: ElevatedButton.icon(
+                  onPressed: () async {_logout(_server);},
+                  icon: Icon(Icons.save),
+                  label: Text("Logout")
+                )
+              )
             ],
           ),
         ),

@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
 
+import 'server.dart';
 import 'torrent_functions.dart';
 
 class LoginScreen extends StatelessWidget {
   LoginScreen({Key? key}) : super(key: key);
   final formKey = GlobalKey<FormState>();
+  final nameController = TextEditingController();
   final ipController = TextEditingController();
   final portController = TextEditingController();
   final usernameController = TextEditingController();
   final passwordController = TextEditingController();
-  final nameController = TextEditingController();
   
   @override
   Widget build(BuildContext context) {
+    nameController.text = "NAS Box 3.0";
     ipController.text = "192.168.0.91";
     portController.text = "8080";
     usernameController.text = "admin";
@@ -103,24 +105,18 @@ class LoginScreen extends StatelessWidget {
                           {
                             final String baseURL = 'http://${ipController.text}:${portController.text}';
 
-                            final String cookie = await login(
+                            Server server = Server(
+                              nameController.text,
                               baseURL,
                               usernameController.text,
                               passwordController.text,
-                              context
+                              null,
+                              false
                             );
+                            
+                            await server.login(context);
 
-                            if (cookie != 'Failed') {
-                              final Map<String, String> info = {
-                                'cookie': cookie,
-                                'name': nameController.text,
-                                'baseURL': baseURL,
-                                'username': usernameController.text,
-                                'password': passwordController.text
-                              };
-
-                              Navigator.pop(context, info);
-                            }
+                            if (server.connected) Navigator.pop(context, server);
                           }
                         },
                         icon: Icon(Icons.save),
