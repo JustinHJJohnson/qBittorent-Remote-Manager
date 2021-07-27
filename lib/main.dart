@@ -38,8 +38,8 @@ class _MyHomePageState extends State<MyHomePage> {
   List<Torrent> _torrents = [];
   Server _server = Server.failedConnection();
 
-  void _logout(Server server) async {
-    await server.logout();
+  void _logout() async {
+    await _server.logout();
     setState(() {
       _torrents.removeRange(0, _torrents.length);
       _title = "qBittorrent Remote Manager";
@@ -116,7 +116,7 @@ class _MyHomePageState extends State<MyHomePage> {
               Padding(
                 padding: const EdgeInsets.all(2.0),
                 child: ElevatedButton.icon(
-                  onPressed: () async {_logout(_server);},
+                  onPressed: () async {_logout();},
                   icon: Icon(Icons.save),
                   label: Text("Logout")
                 )

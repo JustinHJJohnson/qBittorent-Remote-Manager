@@ -36,11 +36,11 @@ class Server {
   Future<void> login(BuildContext context) async {
     // get auth cookie by logging in
     var url = Uri.parse('${this.url!}/api/v2/auth/login');
-    print('request URL is ${this.url!}/api/v2/auth/login');
+    //print('request URL is ${this.url!}/api/v2/auth/login');
     dynamic response;
     try {
       //print('baseURL is $server.url');
-      print('username and pass is username=${this.username!}&password=${this.password!}');
+      //print('username and pass is username=${this.username!}&password=${this.password!}');
       response = await http.post(
         url,
         headers: {'Referer': this.url!},
@@ -71,19 +71,18 @@ class Server {
       return;
     }
 
-    showCustomSnackBar(context, 'Login successful');
-    print('Response 1 status: ${response.statusCode}');
-    print('Response 1 body: ${response.body}');
-    print('Response 1 headers: ${response.headers}');
-
+    //showCustomSnackBar(context, 'Login successful');
+    //print('Response 1 status: ${response.statusCode}');
+    //print('Response 1 body: ${response.body}');
+    //print('Response 1 headers: ${response.headers}');
 
     // Extract the cookie from the response header for auth in future requests
     var rawCookieHeader = response.headers["set-cookie"]!;
-    RegExp pattern = RegExp(r'SID=\S+;');
+    RegExp pattern = RegExp(r'(SID=.+?);');
     final cookieMatch = pattern.firstMatch(rawCookieHeader)!;
-    final cookie = cookieMatch;
-    print('cookie response is ${response.headers["set-cookie"]!}');
-    print("Cookie is $cookie");
+    final cookie = cookieMatch.group(1);
+    //print('cookie response is ${response.headers["set-cookie"]!}');
+    //print("Cookie is $cookie");
 
     this.cookie = cookie.toString();
     this.connected = true;
@@ -96,8 +95,15 @@ class Server {
     if (this.connected) {
       var response = await http.post(
         Uri.parse('${this.url}/api/v2/auth/logout'),
-        headers: {'Cookie': 'SID=${this.cookie}'}
+        headers: {'Cookie': this.cookie!}
       );
+
+      this.connected = false;
+      this.cookie = "";
+      this.username = "";
+      this.password = "";
+      this.url = "";
+      this.name = "";
 
       print(response.body);
     }
