@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import 'login.dart';
@@ -34,17 +36,34 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   String _title = "qBittorrent Remote Manager";
-  String _cookie = "";
   List<Torrent> _torrents = [];
   Server _server = Server.failedConnection();
+  Timer? _timer;
+  bool _pause = false;
 
   void _logout() async {
     await _server.logout();
     setState(() {
       _torrents.removeRange(0, _torrents.length);
       _title = "qBittorrent Remote Manager";
-      _cookie = "";
     });
+  }
+
+  @override
+  void initState() {
+    _timer = new Timer.periodic(Duration(seconds: 1), (timer) async {
+      if (_server.connected) {
+        List<Torrent> temp = await getTorrents(_server);
+        setState(() {_torrents = temp;});
+      }
+    });
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _timer!.cancel();
+    super.dispose();
   }
 
   @override
@@ -73,28 +92,39 @@ class _MyHomePageState extends State<MyHomePage> {
 
                 if (server.connected) {
                   List<Torrent> torrents = await getTorrents(server);
+                  bool pause = await checkAllTorrents(server, torrents);
 
                   setState(() {
                     _server = server;
                     _torrents = torrents;
                     _title = server.name!;
-                    _cookie = server.cookie!;
+                    _pause = pause;
                   });
                 }
               },
             ),
-            ListTile(
+            /*ListTile(
               title: const Text('Item 2'),
               onTap: () {
                 // Update the state of the app.
                 // ...
               },
-            ),
+            ),*/
           ],
         ),
       ),
       appBar: AppBar(
         title: Text(_title),
+        actions: [
+          IconButton(
+            icon: _pause ? Icon(Icons.pause) : Icon(Icons.play_arrow),
+            tooltip: '',
+            onPressed: () {
+              toggleAll(_server, _torrents);
+              _pause = !_pause;  
+            },
+          ),
+        ]
       ),
       body: Center(
         child: Padding(
@@ -102,13 +132,25 @@ class _MyHomePageState extends State<MyHomePage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              Text('Cookie: $_cookie'),
+              Text('Cookie: ${_server.cookie}'),
               Expanded(
                 child: ListView.builder(
                   itemCount: _torrents.length,
                   itemBuilder: (BuildContext context, int index) {
                     return ListTile(
                       title: Text(_torrents[index].name),
+                      subtitle: Text(
+                        'State: ${_torrents[index].state}\n'
+                        'Download: ${formatBytesPerSecond(_torrents[index].dlspeed)}\n'
+                        'Upload: ${formatBytesPerSecond(_torrents[index].upspeed)}\n'
+                        'Seeds: ${_torrents[index].numSeeds}\n'
+                        'Downloaded: ${formatSize((_torrents[index].size * _torrents[index].progress).toInt())} of ${formatSize(_torrents[index].size)}\n'
+                        'Progress: ${(_torrents[index].progress * 100).toStringAsFixed(2)}%\n'
+                        'ETA: ${formatTime(_torrents[index].eta)}'
+                      ),
+                      onTap: () {
+                        _torrents[index].toggle(_server);
+                      },
                     );
                   }
                 ),
@@ -117,7 +159,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 padding: const EdgeInsets.all(2.0),
                 child: ElevatedButton.icon(
                   onPressed: () async {_logout();},
-                  icon: Icon(Icons.save),
+                  icon: Icon(Icons.logout),
                   label: Text("Logout")
                 )
               )

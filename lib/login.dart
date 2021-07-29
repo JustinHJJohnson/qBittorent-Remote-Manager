@@ -1,7 +1,8 @@
+/// This class handles logging in and creating a server object to pass back to
+/// the main widget
 import 'package:flutter/material.dart';
 
 import 'server.dart';
-import 'torrent_functions.dart';
 
 class LoginScreen extends StatelessWidget {
   LoginScreen({Key? key}) : super(key: key);
@@ -119,7 +120,7 @@ class LoginScreen extends StatelessWidget {
                             if (server.connected) Navigator.pop(context, server);
                           }
                         },
-                        icon: Icon(Icons.save),
+                        icon: Icon(Icons.login),
                         label: Text("Login")
                       )
                     )

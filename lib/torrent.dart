@@ -1,18 +1,9 @@
-/*class User {
-  final String firstName, lastName, website;
-  const User(this.firstName, this.lastName, this.website);
- 
-  User.fromJson(Map<String, dynamic> json):
-    this.firstName = json['first_name'],
-    this.lastName = json['last_name'],
-    this.website = json['website'];
- 
-  Map<String, dynamic> toJson() => {
-    "first_name": this.firstName,
-    "last_name": this.lastName,
-    "website": this.website
-  };
-}*/
+/// This class stores all the data for a single torrent and all functions that
+/// operate on a single torrent
+import 'package:http/http.dart' as http;
+
+import 'dart:convert';
+import 'server.dart';
 
 class Torrent {
   /// Unix Epoch timestamp of when the torrent was added to the server
@@ -216,4 +207,42 @@ class Torrent {
     'uploaded_session': this.uploadedSession,
     'upspeed': this.upspeed,
   };
+
+  /// Update this torrent's info
+  void update(Server server) async {
+    var url = Uri.parse('${server.url!}/api/v2/torrents/info');
+    var response = await http.post(
+      url,
+      headers: {'Cookie': server.cookie!},
+      body: {'hash': this.hash}
+    );
+
+    print('${response.statusCode} ${response.body}');
+
+    if (response.statusCode == 200) {
+      Map<String, dynamic> updateData = jsonDecode(response.body)[0];
+      this.dlspeed = updateData['dlspeed'];
+      print('Completed date is ${updateData['dlspeed']}');
+    }
+  }
+
+  /// Pause or resume a torrent
+  void toggle(Server server) async {
+    if (this.state == 'pausedDL' || this.state == 'pausedUP') {
+      var response = await http.post(
+        Uri.parse('${server.url}/api/v2/torrents/resume'),
+        headers: {'Cookie': server.cookie!},
+        body: {'hashes': this.hash}
+      );
+      //print('${response.body}');
+    }
+    else {
+      var response = await http.post(
+        Uri.parse('${server.url}/api/v2/torrents/pause'),
+        headers: {'Cookie': server.cookie!},
+        body: {'hashes': this.hash}
+      );
+      //print('${response.body}');
+    }
+  }
 }

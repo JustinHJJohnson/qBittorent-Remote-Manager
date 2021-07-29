@@ -1,3 +1,5 @@
+/// This class holds all the information of the server being connected to and
+/// has the login and logout functions
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -28,11 +30,9 @@ class Server {
     this.connected
   );
 
-  Server.failedConnection():
-    this.connected = false;
+  Server.failedConnection({this.connected = false});
 
-    /// Login to the qBittorrent server on the URL from [baseURL] and return the cookie used for further api calls.
-  //Future<Server> login(String baseURL, String username, String password, BuildContext context) async {
+  /// Login to the qBittorrent server with information store in this object
   Future<void> login(BuildContext context) async {
     // get auth cookie by logging in
     var url = Uri.parse('${this.url!}/api/v2/auth/login');
@@ -90,7 +90,7 @@ class Server {
     return;
   }
 
-  /// Logout from the session with [cookie] at [baseURL]
+  /// Logout from the session
   Future<void> logout() async {
     if (this.connected) {
       var response = await http.post(
