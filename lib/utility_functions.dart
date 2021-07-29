@@ -13,6 +13,24 @@ void showCustomSnackBar(BuildContext context, String message) {
   ));
 }
 
+/// Build a dialog with the passed in title and children. Code referenced from https://fluttercorner.com/how-to-create-popup-in-flutter-with-example/
+Widget buildCustomDialog(BuildContext context, String title, List<Widget> children) {
+  return new AlertDialog(
+    title: Text(title),
+    // Rounded corners from https://stackoverflow.com/questions/58533442/flutter-how-to-make-my-dialog-box-scrollable
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(20.0))),
+    scrollable: true,
+    content: Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: new Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: children,
+      ),
+    ),
+  );
+}
+
 String formatTime(int seconds) {
   String output = '';
 

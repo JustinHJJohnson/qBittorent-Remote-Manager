@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:qbittorrent_remote_manager/delete_torrent_dialog.dart';
 
 import 'login.dart';
 import 'server.dart';
@@ -137,20 +138,31 @@ class _MyHomePageState extends State<MyHomePage> {
                 child: ListView.builder(
                   itemCount: _torrents.length,
                   itemBuilder: (BuildContext context, int index) {
-                    return ListTile(
-                      title: Text(_torrents[index].name),
-                      subtitle: Text(
-                        'State: ${_torrents[index].state}\n'
-                        'Download: ${formatBytesPerSecond(_torrents[index].dlspeed)}\n'
-                        'Upload: ${formatBytesPerSecond(_torrents[index].upspeed)}\n'
-                        'Seeds: ${_torrents[index].numSeeds}\n'
-                        'Downloaded: ${formatSize((_torrents[index].size * _torrents[index].progress).toInt())} of ${formatSize(_torrents[index].size)}\n'
-                        'Progress: ${(_torrents[index].progress * 100).toStringAsFixed(2)}%\n'
-                        'ETA: ${formatTime(_torrents[index].eta)}'
-                      ),
-                      onTap: () {
-                        _torrents[index].toggle(_server);
+                    var torrent = _torrents[index];
+
+                    return Dismissible(
+                      key: Key(torrent.hash),
+                      confirmDismiss: (DismissDirection direction) async {
+                        await showDeleteTorrentDialog(context, torrent, _server);
                       },
+                      onDismissed: (DismissDirection direction) {},
+                      direction: DismissDirection.endToStart,
+                      background: Container(color: Colors.red),
+                      child: ListTile(
+                        title: Text(_torrents[index].name),
+                        subtitle: Text(
+                          'State: ${torrent.state}\n'
+                          'Download: ${formatBytesPerSecond(torrent.dlspeed)}\n'
+                          'Upload: ${formatBytesPerSecond(torrent.upspeed)}\n'
+                          'Seeds: ${torrent.numSeeds}\n'
+                          'Downloaded: ${formatSize((torrent.size * torrent.progress).toInt())} of ${formatSize(torrent.size)}\n'
+                          'Progress: ${(torrent.progress * 100).toStringAsFixed(2)}%\n'
+                          'ETA: ${formatTime(torrent.eta)}'
+                        ),
+                        onTap: () {
+                          _torrents[index].toggle(_server);
+                        },
+                      ),
                     );
                   }
                 ),
