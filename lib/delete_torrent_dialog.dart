@@ -19,7 +19,7 @@ Future<void> showDeleteTorrentDialog(BuildContext context, Torrent torrent, Serv
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
               Padding(
-                padding: const EdgeInsets.all(8.0),
+                padding: const EdgeInsets.all(2.0),
                 child: Flexible(
                   //child: Text('Are you sure you want to delete ${torrent.name}?')
                   child: Text(torrent.name)
@@ -46,7 +46,6 @@ Future<void> showDeleteTorrentDialog(BuildContext context, Torrent torrent, Serv
                       headers: {'Cookie': server.cookie!},
                       body: {
                         'hashes': torrent.hash,
-                        //'deleteFiles': _deleteFiles.toString().toLowerCase()
                         'deleteFiles': _deleteFiles.toString()
                       }
                     );

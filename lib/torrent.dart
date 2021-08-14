@@ -217,12 +217,12 @@ class Torrent {
       body: {'hash': this.hash}
     );
 
-    print('${response.statusCode} ${response.body}');
+    //print('${response.statusCode} ${response.body}');
 
     if (response.statusCode == 200) {
       Map<String, dynamic> updateData = jsonDecode(response.body)[0];
       this.dlspeed = updateData['dlspeed'];
-      print('Completed date is ${updateData['dlspeed']}');
+      //print('Completed date is ${updateData['dlspeed']}');
     }
   }
 

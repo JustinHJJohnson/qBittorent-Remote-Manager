@@ -105,7 +105,7 @@ class Server {
       this.url = "";
       this.name = "";
 
-      print(response.body);
+      //print(response.body);
     }
   }
 }
