@@ -25,7 +25,7 @@ Future<List<Torrent>> getTorrents(Server server) async {
 }
 
 /// Check if any torrents are unpaused and returns true if so
-Future<bool> checkAllTorrents(Server server, List<Torrent> torrents) async {
+bool checkAllTorrents(Server server, List<Torrent> torrents) {
   bool pause = false;
 
   for (Torrent torrent in torrents) {
@@ -42,20 +42,59 @@ Future<bool> checkAllTorrents(Server server, List<Torrent> torrents) async {
 void toggleAll(Server server, List<Torrent> torrents) async {
   bool pause = await checkAllTorrents(server, torrents);
 
-  if (pause) {
-    var response = await http.post(
-      Uri.parse('${server.url}/api/v2/torrents/pause'),
-      headers: {'Cookie': server.cookie!},
-      body: {'hashes': 'all'}
-    );
-    print('${response.body}');
+  if (server.connected) {
+    if (pause) {
+      var response = await http.post(
+        Uri.parse('${server.url}/api/v2/torrents/pause'),
+        headers: {'Cookie': server.cookie!},
+        body: {'hashes': 'all'}
+      );
+      print('${response.body}');
+    }
+    else {
+      var response = await http.post(
+        Uri.parse('${server.url}/api/v2/torrents/resume'),
+        headers: {'Cookie': server.cookie!},
+        body: {'hashes': 'all'}
+      );
+      print('${response.body}');
+    }
   }
-  else {
-    var response = await http.post(
-      Uri.parse('${server.url}/api/v2/torrents/resume'),
-      headers: {'Cookie': server.cookie!},
-      body: {'hashes': 'all'}
-    );
-    print('${response.body}');
+}
+
+Future<int> startSearch(Server server, String pattern) async {
+  var response = await http.post(
+    Uri.parse('${server.url}/api/v2/search/start'),
+    headers: {'Cookie': server.cookie!},
+    body: {
+      'pattern': pattern,
+      'plugins' : 'all',
+      'category' : 'all',
+    }
+  );
+
+  String body = response.body;
+  int searchID = int.parse(body.substring(6, body.length - 1));
+  print('$body');
+  print('$searchID');
+
+  return Future<int>.value(searchID);
+}
+
+void getSearchResults(Server server, int searchID) async {
+  var response = await http.post(
+    Uri.parse('${server.url}/api/v2/search/results'),
+    headers: {'Cookie': server.cookie!},
+    body: {'id': '$searchID'}
+  );
+
+  Map<String, dynamic> results = jsonDecode(response.body);
+  
+  print('${results['results'][0]}');
+
+  switch(response.statusCode) {
+    case 404: print('Search task not found'); break;
+    case 409: print('Offset is too big/small'); break;
+    case 404: print('${response.body}'); break;
   }
 }

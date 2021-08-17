@@ -93,7 +93,7 @@ class Server {
   /// Logout from the session
   Future<void> logout() async {
     if (this.connected) {
-      var response = await http.post(
+      await http.post(
         Uri.parse('${this.url}/api/v2/auth/logout'),
         headers: {'Cookie': this.cookie!}
       );
@@ -108,4 +108,10 @@ class Server {
       //print(response.body);
     }
   }
+
+  String toString() =>
+    'Name: ${this.name}\n'
+    'Username: ${this.username}\n'
+    'Cookie: ${this.cookie}\n'
+    'Connected: ${this.connected}\n';
 }

@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'server.dart';
 
+/// Stores all the information for a torrent and has functions to update and pause/resume the torrent
 class Torrent {
   /// Unix Epoch timestamp of when the torrent was added to the server
   final int addedOn;
