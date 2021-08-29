@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:qbittorrent_remote_manager/searchResult.dart';
 import 'package:qbittorrent_remote_manager/server.dart';
@@ -20,6 +22,7 @@ class _SearchScreenState extends State<SearchScreen> {
 
   Icon _searchIcon = Icon(Icons.search);
   Widget _appBarTitle = Text('Search');
+  Timer? _timer;
 
   List<SearchResult> _searchResults = [];
   List<SearchResult> _searchResultsFiltered = [];
@@ -48,15 +51,36 @@ class _SearchScreenState extends State<SearchScreen> {
                     onEditingComplete: () async {
                       print("Done editting");
 
+                      // This block close the keyboard when the user presses enter/return
                       FocusScopeNode currentFocus = FocusScope.of(context);
-
                       if (!currentFocus.hasPrimaryFocus) {
                         currentFocus.unfocus();
                       }
 
                       int searchID = await startSearch(widget.server, _search.text);
-                      setState(() {_searchID = searchID;});
-                      //getSearchResults(widget.server, searchID);
+                      //List<SearchResult> tempSearchResults = await getSearchResults(widget.server, searchID);
+                      setState(() {
+                        _searchID = searchID;
+                        //_searchResults = tempSearchResults;
+                        //_searchResultsFiltered = _searchResults;
+                        _searchResults = [];
+                        _searchResultsFiltered = [];
+                      });
+
+                      _timer = new Timer.periodic(Duration(seconds: 1), (timer) async {
+                        if (await isSearchRunning(widget.server, _searchID)) {
+                          print('Search is running');
+                          List<SearchResult> temp = await getSearchResults(widget.server, searchID);
+                          setState(() {
+                            _searchResults = temp;
+                            _searchResultsFiltered = _searchResults;
+                          });
+                        }
+                        else {
+                          print('Search is done');
+                          _timer!.cancel();
+                        }
+                      });
                     },
                   );
                 } else {
@@ -100,7 +124,11 @@ class _SearchScreenState extends State<SearchScreen> {
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.search),
         onPressed: () async {
-          getSearchResults(widget.server, _searchID);
+          List<SearchResult> results = await getSearchResults(widget.server, _searchID);
+          setState(() {
+            _searchResults = results;
+            _searchResultsFiltered = results;
+          });
         }
       ),
     );

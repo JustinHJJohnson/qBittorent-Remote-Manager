@@ -194,7 +194,7 @@ class _MyHomePageState extends State<MyHomePage> {
     
         if (server.connected) {
           List<Torrent> torrents = await getTorrents(server);
-          bool pause = await checkAllTorrents(server, torrents);
+          bool pause = checkAllTorrents(server, torrents);
     
           setState(() {
             _server = server;

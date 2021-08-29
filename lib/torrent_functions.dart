@@ -1,6 +1,7 @@
 /// This file holds all functions that operate on multiple/all torrents
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:qbittorrent_remote_manager/searchResult.dart';
 
 import 'server.dart';
 import 'torrent.dart';
@@ -40,7 +41,7 @@ bool checkAllTorrents(Server server, List<Torrent> torrents) {
 
 /// Pause or resume all torrents based on current torrents states
 void toggleAll(Server server, List<Torrent> torrents) async {
-  bool pause = await checkAllTorrents(server, torrents);
+  bool pause = checkAllTorrents(server, torrents);
 
   if (server.connected) {
     if (pause) {
@@ -81,20 +82,37 @@ Future<int> startSearch(Server server, String pattern) async {
   return Future<int>.value(searchID);
 }
 
-void getSearchResults(Server server, int searchID) async {
+Future<List<SearchResult>> getSearchResults(Server server, int searchID) async {
   var response = await http.post(
     Uri.parse('${server.url}/api/v2/search/results'),
     headers: {'Cookie': server.cookie!},
     body: {'id': '$searchID'}
   );
 
-  Map<String, dynamic> results = jsonDecode(response.body);
-  
-  print('${results['results'][0]}');
+  dynamic responseDecoded = jsonDecode(response.body);
+  //dynamic results = jsonDecode(response.body);
+  List<SearchResult> output = [];
 
-  switch(response.statusCode) {
+  switch (response.statusCode) {
     case 404: print('Search task not found'); break;
     case 409: print('Offset is too big/small'); break;
-    case 404: print('${response.body}'); break;
+    case 200: for (var result in responseDecoded['results']) output.add(SearchResult.fromJson(result)); break;
   }
+
+  //if (output.isNotEmpty) print(output[0].fileName);
+  //print('${results['results'][0]}');
+  return output;
+}
+
+Future<bool> isSearchRunning(Server server, int searchID) async {
+  var response = await http.post(
+    Uri.parse('${server.url}/api/v2/search/status'),
+    headers: {'Cookie': server.cookie!},
+    body: {'id': '$searchID'}
+  );
+
+  dynamic results = jsonDecode(response.body);
+  //print(results[0]['total']);
+  //print(results);
+  return results[0]['status'] == 'Running' ? true : false;
 }
