@@ -104,7 +104,7 @@ Future<List<SearchResult>> getSearchResults(Server server, int searchID) async {
   return output;
 }
 
-Future<bool> isSearchRunning(Server server, int searchID) async {
+Future<Map<String, dynamic>> getSearchStatus(Server server, int searchID) async {
   var response = await http.post(
     Uri.parse('${server.url}/api/v2/search/status'),
     headers: {'Cookie': server.cookie!},
@@ -112,7 +112,16 @@ Future<bool> isSearchRunning(Server server, int searchID) async {
   );
 
   dynamic results = jsonDecode(response.body);
-  //print(results[0]['total']);
-  //print(results);
-  return results[0]['status'] == 'Running' ? true : false;
+
+  return results[0];
 }
+
+/*Future<bool> isSearchRunning(Server server, int searchID) async {
+  Map<String, dynamic> searchStatus = await getSearchStatus(server, searchID);
+
+  if (searchStatus['status'] == 'Stopped') return false;
+
+  bool output = true;
+
+  return output;
+}*/

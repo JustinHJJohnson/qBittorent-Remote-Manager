@@ -23,6 +23,8 @@ class _SearchScreenState extends State<SearchScreen> {
   Icon _searchIcon = Icon(Icons.search);
   Widget _appBarTitle = Text('Search');
   Timer? _timer;
+  int _iteration = 0;
+  int _lastTotal = 0;
 
   List<SearchResult> _searchResults = [];
   List<SearchResult> _searchResultsFiltered = [];
@@ -67,8 +69,45 @@ class _SearchScreenState extends State<SearchScreen> {
                         _searchResultsFiltered = [];
                       });
 
+                      // A timer to get the new search results until the search status changes or we find no extra results after 20 iterations
                       _timer = new Timer.periodic(Duration(seconds: 1), (timer) async {
-                        if (await isSearchRunning(widget.server, _searchID)) {
+                        bool searchRunning = true;
+                        Map<String, dynamic> searchStatus = await getSearchStatus(widget.server, _searchID);
+
+                        print("Current iteration is $_iteration\nCurrent total is ${searchStatus['total']}");
+                        print("Search status: $searchStatus");
+                        
+                        if (searchStatus['status'] == 'Stopped' || _iteration >= 20) {
+                          searchRunning = false;
+
+                          setState(() {
+                            _iteration = 0;
+                            _lastTotal = 0;
+                          });
+
+                          searchRunning = false;
+                          var response = await http.post(
+                            Uri.parse('${widget.server.url}/api/v2/search/stop'),
+                            headers: {'Cookie': widget.server.cookie!},
+                            body: {'id': '$_searchID'}
+                          );
+
+                          print('status code from stopping search: ${response.statusCode}');
+
+                          var response2 = await http.post(
+                            Uri.parse('${widget.server.url}/api/v2/search/delete'),
+                            headers: {'Cookie': widget.server.cookie!},
+                            body: {'id': '$_searchID'}
+                          );
+
+                          print('status code from deleting search: ${response2.statusCode}');
+                        }
+                        
+                        setState(() {
+                          searchStatus['total'] == _lastTotal ? _iteration++ : _iteration = 0;
+                        });
+
+                        if (searchRunning) {
                           print('Search is running');
                           List<SearchResult> temp = await getSearchResults(widget.server, searchID);
                           setState(() {
@@ -80,6 +119,8 @@ class _SearchScreenState extends State<SearchScreen> {
                           print('Search is done');
                           _timer!.cancel();
                         }
+
+                        setState(() {_lastTotal = searchStatus['total'];});
                       });
                     },
                   );
